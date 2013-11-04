@@ -1,0 +1,3 @@
+module Githeroes
+  VERSION = "0.0.1"
+end
