@@ -3,6 +3,7 @@ require 'octokit'
 require 'githeroes'
 require 'githeroes/cache'
 require 'githeroes/logger'
+require 'githeroes/serializer'
 require 'githeroes/ext/faraday'
 
 class Githeroes::Connection < SimpleDelegator
@@ -11,7 +12,7 @@ class Githeroes::Connection < SimpleDelegator
       builder.use(:http_cache,
         store:         :redis_store,
         store_options: %w(localhost/0/githeroes),
-        serializer:    Marshal,
+        serializer:    Githeroes::Serializer,
         logger:        Githeroes::Logger.instance)
       builder.use     Githeroes::Cache
       builder.use     Octokit::Response::RaiseError
