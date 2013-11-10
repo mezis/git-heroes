@@ -1,3 +1,5 @@
+require 'faraday-http-cache'
+
 # Monkey-patch Faraday cache
 # Forces long caching, even for private resources
 Faraday::HttpCache::CacheControl.class_eval do

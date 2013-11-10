@@ -5,140 +5,28 @@
 require 'rubygems'
 require 'bundler/setup'
 require 'dotenv'
-require 'octokit'
-require 'logger'
-require 'set'
 require 'csv'
-require 'faraday-http-cache'
-require 'active_support/all' # for #beginning_of_week
 
-require 'githeroes/ext/time'
-require 'githeroes/ext/faraday'
-require 'githeroes/ext/octokit'
-require 'githeroes/cache'
-
-END_TIME     = Time.now.beginning_of_week
-WEEK_COUNT   = 52
-ORGANIZATION = 'HouseTrip'
-
-WEEKS = (1..WEEK_COUNT).map { |idx| END_TIME - idx.weeks }
-START_TIME = WEEKS.last
-
-POINTS   = {
-  pull:    5,
-  comment: 1,
-  merge:   2
-}
-
-USERS = Set.new
-DATA = {} # date -> username -> points
-
-
-
-def give_points(kind, user, timestamp)
-  week_key = timestamp.week_key
-  USERS.add user
-  DATA[user] ||= {}
-  DATA[user][week_key] ||= 0
-  DATA[user][week_key] += POINTS[kind]
-end
-
-def each_pull_request(client, repository)
-  [:open, :closed].each do |status|
-    page = 1
-    while true
-      pull_requests = client.pull_requests(repository.full_name, status, per_page: 20, page: page)
-      break if pull_requests.empty?
-      break if pull_requests.all? { |pr| pr.created_at < START_TIME }
-      page += 1
-
-      pull_requests.each do |pull_request|
-        next if pull_request.closed_at? && !pull_request.merged_at? # skip unmerged closed PRs
-        next if pull_request.created_at < START_TIME                # skip too old PRs
-
-        get_options = {}
-        if pull_request.merged_at? || pull_request.closed_at?
-          # old, cacheable forever
-          get_options[:headers] = { 'X-Force-Cache' => '1' }
-        end
-
-        pull_request = client.request(:get, pull_request.rels[:self].href, get_options)
-
-        yield pull_request, get_options
-      end
-    end
-  end
-end
+require 'githeroes/connection'
+require 'githeroes/engine'
 
 Dotenv.load!
 
+client = Githeroes::Connection.new
+engine = Githeroes::Engine.new(client, 'HouseTrip')
+engine.run
 
-# Logging
-LOGGER = Logger.new(STDOUT)
-
-# Setup HTTP caching
-stack = Faraday::Builder.new do |builder|
-  builder.use(:http_cache,
-    store:         :redis_store,
-    store_options: %w(localhost/0/githeroes),
-    serializer:    Marshal,
-    logger:        LOGGER)
-  builder.use     Githeroes::Cache
-  builder.use     Octokit::Response::RaiseError
-  builder.adapter Faraday.default_adapter
-end
-Octokit.middleware = stack
-
-
-client = Octokit::Client.new access_token: ENV['GITHUB_TOKEN']
-organization = client.organization(ORGANIZATION)
-repositories = client.organization_repositories(ORGANIZATION)
-
-
-repositories.each do |repository|
-  each_pull_request(client, repository) do |pull_request, get_options|
-    non_self_comments = 0
-    ttl = pull_request.merged_at? ? nil : 1.day
-
-    # comments on PR
-    uri = pull_request.rels[:comments].href
-    client.request(:get, uri, get_options).each do |comment|
-      next if comment.user.login == pull_request.user.login
-      give_points(:comment, comment.user.login, comment.created_at)
-      non_self_comments += 1
-    end
-
-    # comments on diff (unsupported by Octokit)
-    uri = "https://api.github.com/repos/#{repository.full_name}/pulls/#{pull_request.number}/comments"
-    client.request(:get, uri, get_options).each do |comment|
-      next if comment.user.login == pull_request.user.login
-      give_points(:comment, comment.user.login, comment.created_at)
-      non_self_comments += 1
-    end
-
-    merger = pull_request.merged_by
-    self_merge = (merger && merger.login == pull_request.user.login)
-
-    if (non_self_comments > 0) || !self_merge
-      give_points(:pull,  pull_request.user.login, pull_request.created_at) 
-    end
-
-    if pull_request.merged_by
-      give_points(:merge, pull_request.merged_by.login, pull_request.merged_at)
-    end
-  end
-end
 
 # Export to CSV
 CSV.open('report.csv', 'w') do |csv|
-  weeks = WEEKS.reverse
+  weeks = engine.weeks.sort
   weeks_keys = weeks.map { |w| w.week_key }
   header = %w(login) + weeks.map { |w| w.strftime('%Y.%W (%b %d)') }
   csv << header
-  USERS.each do |user|
+  engine.users.each do |user|
     row = [user]
     weeks_keys.each do |weeks_keys|
-      row << DATA[user][weeks_keys]
+      row << engine.data[user][weeks_keys]
     end
     csv << row
   end
