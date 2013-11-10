@@ -1,24 +1,21 @@
-# Githeroes
+# Git Heroes
 
-TODO: Write a gem description
+Ever wanted to know your your team's top contributors are?
+
+`git heroes will tell you, based on their Github activity (pull requests,
+`comments, and merges).
+
+**Caveat: no hard metric that measures individuals is reliable. Please do
+not use this to estimate someone's productivity. In combination with other
+tools, it can be effectivee to detect trends, though.
 
 ## Installation
-
-Add this line to your application's Gemfile:
-
-    gem 'githeroes'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
 
     $ gem install githeroes
 
 ## Usage
 
-TODO: Write usage instructions here
+    $ git heroes -r <your-organization> -t <github-token>
 
 ## Contributing
 
