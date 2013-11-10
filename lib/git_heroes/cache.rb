@@ -1,7 +1,7 @@
-require 'githeroes'
+require 'git_heroes'
 require 'faraday'
 
-class Githeroes::Cache < Faraday::Middleware
+class GitHeroes::Cache < Faraday::Middleware
   def call(env, *args)
     # do something with the request
     force_cache = !! env[:request_headers]['X-Force-Cache']

@@ -1,15 +1,15 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'githeroes/version'
+require 'git_heroes/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "githeroes"
-  spec.version       = Githeroes::VERSION
+  spec.name          = "git-heroes"
+  spec.version       = GitHeroes::VERSION
   spec.authors       = ["Julien Letessier"]
   spec.email         = ["julien.letessier@gmail.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.description   = %q{Leaderboard of your team's Github activity}
+  spec.summary       = %q{Leaderboard of your team's Github activity}
   spec.homepage      = ""
   spec.license       = "MIT"
 

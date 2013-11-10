@@ -1,6 +1,6 @@
-require 'githeroes'
+require 'git_heroes'
 
-module Githeroes::Serializer
+module GitHeroes::Serializer
   extend self
 
   def load(data)

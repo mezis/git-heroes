@@ -1,20 +1,20 @@
 require 'delegate'
 require 'octokit'
-require 'githeroes'
-require 'githeroes/cache'
-require 'githeroes/logger'
-require 'githeroes/serializer'
-require 'githeroes/ext/faraday'
+require 'git_heroes'
+require 'git_heroes/cache'
+require 'git_heroes/logger'
+require 'git_heroes/serializer'
+require 'git_heroes/ext/faraday'
 
-class Githeroes::Connection < SimpleDelegator
+class GitHeroes::Connection < SimpleDelegator
   def initialize(token:nil)
     stack = Faraday::Builder.new do |builder|
       builder.use(:http_cache,
         store:         :redis_store,
         store_options: %w(localhost/0/githeroes),
-        serializer:    Githeroes::Serializer,
-        logger:        Githeroes::Logger.instance)
-      builder.use     Githeroes::Cache
+        serializer:    GitHeroes::Serializer,
+        logger:        GitHeroes::Logger.instance)
+      builder.use     GitHeroes::Cache
       builder.use     Octokit::Response::RaiseError
       builder.adapter Faraday.default_adapter
     end

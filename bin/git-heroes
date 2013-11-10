@@ -7,9 +7,9 @@ require 'bundler/setup'
 require 'dotenv'
 require 'optparse'
 
-require 'githeroes/connection'
-require 'githeroes/engine'
-require 'githeroes/logger'
+require 'git_heroes/connection'
+require 'git_heroes/engine'
+require 'git_heroes/logger'
 
 Dotenv.load!
 
@@ -56,10 +56,10 @@ if OPTIONS[:org].nil?
 end
 
 if !OPTIONS[:verbose]
-  Githeroes::Logger.instance.level = Logger::WARN
+  GitHeroes::Logger.instance.level = Logger::WARN
 end
 
-client = Githeroes::Connection.new(token: OPTIONS[:token])
-engine = Githeroes::Engine.new(client:client, org:OPTIONS[:org], weeks:OPTIONS[:weeks])
+client = GitHeroes::Connection.new(token: OPTIONS[:token])
+engine = GitHeroes::Engine.new(client:client, org:OPTIONS[:org], weeks:OPTIONS[:weeks])
 engine.run
 engine.export(OPTIONS[:path])

@@ -1,10 +1,10 @@
 require 'set'
-require 'githeroes/ext/time'
-require 'githeroes/ext/octokit'
+require 'git_heroes/ext/time'
+require 'git_heroes/ext/octokit'
 require 'active_support/all' # for #beginning_of_week
 require 'csv'
 
-class Githeroes::Engine
+class GitHeroes::Engine
   POINTS = { pull: 5, comment: 1, merge: 2 }
   
   def initialize(client:nil, org:nil, weeks:nil)

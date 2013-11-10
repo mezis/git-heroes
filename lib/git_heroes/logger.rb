@@ -1,9 +1,9 @@
-require 'githeroes'
+require 'git_heroes'
 require 'logger'
 require 'delegate'
 require 'singleton'
 
-class Githeroes::Logger < SimpleDelegator
+class GitHeroes::Logger < SimpleDelegator
   include Singleton
 
   def initialize
