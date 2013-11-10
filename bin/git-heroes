@@ -11,7 +11,7 @@ require 'git_heroes/connection'
 require 'git_heroes/engine'
 require 'git_heroes/logger'
 
-Dotenv.load!
+Dotenv.load
 
 OPTIONS = {
   path:    'report.csv',
