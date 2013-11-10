@@ -5,30 +5,61 @@
 require 'rubygems'
 require 'bundler/setup'
 require 'dotenv'
-require 'csv'
+require 'optparse'
 
 require 'githeroes/connection'
 require 'githeroes/engine'
+require 'githeroes/logger'
 
 Dotenv.load!
 
-client = Githeroes::Connection.new
-engine = Githeroes::Engine.new(client, 'HouseTrip')
-engine.run
+OPTIONS = {
+  path:    'report.csv',
+  verbose: false,
+  token:   ENV['GITHUB_TOKEN'],
+  weeks:   12
+}
 
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [options]"
 
-# Export to CSV
-CSV.open('report.csv', 'w') do |csv|
-  weeks = engine.weeks.sort
-  weeks_keys = weeks.map { |w| w.week_key }
-  header = %w(login) + weeks.map { |w| w.strftime('%Y.%W (%b %d)') }
-  csv << header
-  engine.users.each do |user|
-    row = [user]
-    weeks_keys.each do |weeks_keys|
-      row << engine.data[user][weeks_keys]
-    end
-    csv << row
+  opts.on("-r", "--organization ORG", "Progress organization ORG (required)") do |org|
+    OPTIONS[:org] = org
   end
+
+  opts.on("-o", "--output FILE", "Save report to FILE") do |path|
+    OPTIONS[:path] = path
+  end
+
+  opts.on("-t", "--token TOKEN", "A Github authentication token (defaults to GITHUB_TOKEN)") do |token|
+    OPTIONS[:token] = token
+  end
+
+  opts.on("-w", "--weeks WEEKS", Integer, "Report on the last WEEKS weeks (default #{OPTIONS[:weeks]}).") do |weeks|
+    OPTIONS[:weeks] = weeks
+  end
+
+  opts.on("-v", "--verbose", "Run verbosely") do |v|
+    OPTIONS[:verbose] = v
+  end
+
+  opts.on_tail("-h", "--help", "Show this message") do
+    $stderr.puts opts
+    exit 0
+  end
+end.parse!
+
+
+if OPTIONS[:org].nil?
+  $stderr.puts "No organization specified, aborting."
+  exit 1
 end
 
+if !OPTIONS[:verbose]
+  Githeroes::Logger.instance.level = Logger::WARN
+end
+
+client = Githeroes::Connection.new(token: OPTIONS[:token])
+engine = Githeroes::Engine.new(client:client, org:OPTIONS[:org], weeks:OPTIONS[:weeks])
+engine.run
+engine.export(OPTIONS[:path])

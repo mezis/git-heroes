@@ -6,7 +6,7 @@ require 'githeroes/logger'
 require 'githeroes/ext/faraday'
 
 class Githeroes::Connection < SimpleDelegator
-  def initialize
+  def initialize(token:nil)
     stack = Faraday::Builder.new do |builder|
       builder.use(:http_cache,
         store:         :redis_store,
@@ -19,7 +19,7 @@ class Githeroes::Connection < SimpleDelegator
     end
 
     client = Octokit::Client.new(
-      access_token: ENV['GITHUB_TOKEN'],
+      access_token: token,
       middleware:   stack)
 
     super(client)

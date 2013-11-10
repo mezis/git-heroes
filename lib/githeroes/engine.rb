@@ -2,21 +2,19 @@ require 'set'
 require 'githeroes/ext/time'
 require 'githeroes/ext/octokit'
 require 'active_support/all' # for #beginning_of_week
+require 'csv'
 
 class Githeroes::Engine
   POINTS = { pull: 5, comment: 1, merge: 2 }
   
-  attr_reader :users, :data, :weeks
-
-
-  def initialize(client, organisation)
+  def initialize(client:nil, org:nil, weeks:nil)
     @client       = client
-    @organisation = organisation
+    @organisation = org
     @data         = {}
     @users        = Set.new
 
     @end_time     = Time.now.beginning_of_week
-    week_count    = 12
+    week_count    = weeks
     @weeks        = (1..week_count).map { |idx| @end_time - idx.weeks }
     @start_time   = @weeks.last
   end
@@ -27,6 +25,23 @@ class Githeroes::Engine
     repositories.each do |repository|
       each_pull_request(repository) do |pull_request, get_options|
         process_pull_request(pull_request, get_options)
+      end
+    end
+  end
+
+
+  def export(path)
+    CSV.open(path, 'w') do |csv|
+      weeks = @weeks.sort
+      weeks_keys = weeks.map { |w| w.week_key }
+      header = %w(login) + weeks.map { |w| w.strftime('%Y.%W (%b %d)') }
+      csv << header
+      @users.each do |user|
+        row = [user]
+        weeks_keys.each do |weeks_keys|
+          row << @data[user][weeks_keys]
+        end
+        csv << row
       end
     end
   end
