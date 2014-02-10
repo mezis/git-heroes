@@ -10,8 +10,11 @@ class GitHeroes::Engine
   def initialize(client:nil, org:nil, weeks:nil)
     @client       = client
     @organisation = org
+
+    # output/calculated fields
     @data         = {}
     @users        = Set.new
+    @durations    = []
 
     @end_time     = Time.now.beginning_of_week
     week_count    = weeks
@@ -32,7 +35,7 @@ class GitHeroes::Engine
 
   def export(path)
     CSV.open(path, 'w') do |csv|
-      weeks = @weeks.sort
+      weeks = @weeks.sort.reverse
       weeks_keys = weeks.map { |w| w.week_key }
       header = %w(login) + weeks.map { |w| w.strftime('%Y.%W (%b %d)') }
       csv << header
@@ -42,6 +45,19 @@ class GitHeroes::Engine
           row << @data[user][weeks_keys]
         end
         csv << row
+      end
+    end
+  end
+
+  def export_durations(path)
+    CSV.open(path, 'w') do |csv|
+      csv << %w(login week duration)
+      @durations.each do |login, week, duration|
+        csv << [
+          login,
+          week.strftime('%Y.%W (%b %d)'),
+          duration / 86400
+        ]
       end
     end
   end
@@ -70,6 +86,12 @@ class GitHeroes::Engine
     if pull_request.merged_by
       give_points(:merge, pull_request.merged_by.login, pull_request.merged_at)
     end
+
+    if pull_request.merged_at
+      record_duration(pull_request.merged_at - pull_request.created_at, 
+                      pull_request.user.login, 
+                      pull_request.merged_at)
+    end
   end
 
 
@@ -80,6 +102,11 @@ class GitHeroes::Engine
     @data[user] ||= {}
     @data[user][week_key] ||= 0
     @data[user][week_key] += POINTS[kind]
+  end
+
+  def record_duration(duration, user, timestamp)
+    return unless @start_time < timestamp && timestamp < @end_time
+    @durations << [user, timestamp, duration]
   end
 
 
@@ -119,7 +146,12 @@ class GitHeroes::Engine
             get_options[:headers] = { 'X-Force-Cache' => '1' }
           end
 
-          pull_request = @client.request(:get, pull_request.rels[:self].href, get_options)
+          begin
+            pull_request = @client.request(:get, pull_request.rels[:self].href, get_options)
+          rescue Octokit::InternalServerError => e
+            $stderr.puts "skipping PR #{pull_request.inspect}"
+            next
+          end
 
           yield pull_request, get_options
         end

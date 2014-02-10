@@ -14,7 +14,7 @@ require 'git_heroes/logger'
 Dotenv.load
 
 OPTIONS = {
-  path:    'report.csv',
+  path:    'report',
   verbose: false,
   token:   ENV['GITHUB_TOKEN'],
   weeks:   12
@@ -62,4 +62,5 @@ end
 client = GitHeroes::Connection.new(token: OPTIONS[:token])
 engine = GitHeroes::Engine.new(client:client, org:OPTIONS[:org], weeks:OPTIONS[:weeks])
 engine.run
-engine.export(OPTIONS[:path])
+engine.export("%s-points.csv" % OPTIONS[:path])
+engine.export_durations("%s-timing.csv" % OPTIONS[:path])
