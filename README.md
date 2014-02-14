@@ -43,6 +43,8 @@ Details:
 
 ![](http://cl.ly/image/2X3b2k3V2Q3b/peruser.png)
 
+![](http://cl.ly/image/3k0d0P1E3I1o/latency.png)
+
 ## Contributing
 
 1. Fork it
