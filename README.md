@@ -20,6 +20,13 @@ Redis instance for caching.
 
     $ git heroes -r <your-organization> -t <github-token>
 
+Outputs two files, `report-timing.csv` (time taken to merge pull requests) and
+`report-points.csv` (contribution points per user).
+
+You'll probably want to pivot this in a spreadsheet application to get
+meaningful results; if you want a template for that just email
+[me](http://github.com/mezis).
+
 Details:
 
     Usage: bin/git-heroes [options]
@@ -29,6 +36,12 @@ Details:
         -w, --weeks WEEKS        Report on the last WEEKS weeks (default 12).
         -v, --verbose            Run verbosely
         -h, --help               Show this message
+
+## Example reports
+
+![](http://cl.ly/image/261J1U04121D/team.png)
+
+![](http://cl.ly/image/2X3b2k3V2Q3b/peruser.png)
 
 ## Contributing
 
