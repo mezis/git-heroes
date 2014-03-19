@@ -8,6 +8,6 @@ Faraday::HttpCache::CacheControl.class_eval do
   end
 
   def shared_max_age
-    36000
+    86_400 * 2
   end
 end
