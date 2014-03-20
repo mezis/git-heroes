@@ -90,7 +90,7 @@ class GitHeroes::Engine
       give_points(:pull,  pull_request.user.login, pull_request.created_at) 
     end
 
-    if pull_request.merged_by
+    if pull_request.merged_by && !self_merge
       give_points(:merge, pull_request.merged_by.login, pull_request.merged_at)
     end
 
