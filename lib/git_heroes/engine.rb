@@ -77,6 +77,7 @@ class GitHeroes::Engine
     ttl = pull_request.merged_at? ? nil : 1.day
 
     each_comment(pull_request, get_options) do |comment|
+      next if comment.body =~ /Code Climate/
       next if comment.user.login == pull_request.user.login
       give_points(:comment, comment.user.login, comment.created_at)
       non_self_comments += 1
