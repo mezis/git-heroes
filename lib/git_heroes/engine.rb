@@ -57,7 +57,8 @@ class GitHeroes::Engine
   def export_durations(path)
     CSV.open(path, 'w') do |csv|
       csv << %w(login week duration)
-      @durations.each do |login, week, duration|
+      @durations.each do |login, timestamp, duration|
+        week = timestamp.beginning_of_week
         csv << [
           login,
           week.strftime('%Y.%W (%b %d)'),
