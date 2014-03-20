@@ -24,11 +24,16 @@ class GitHeroes::Engine
 
 
   def run
-    repositories = @client.organization_repositories(@organisation)
-    repositories.each do |repository|
-      each_pull_request(repository) do |pull_request, get_options|
-        process_pull_request(pull_request, get_options)
+    page = 1
+    while true
+      repositories = @client.organization_repositories(@organisation, page:page)
+      break if repositories.empty?
+      repositories.each do |repository|
+        each_pull_request(repository) do |pull_request, get_options|
+          process_pull_request(pull_request, get_options)
+        end
       end
+      page += 1
     end
   end
 
