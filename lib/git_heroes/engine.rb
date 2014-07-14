@@ -136,7 +136,7 @@ class GitHeroes::Engine
     [:open, :closed].each do |status|
       page = 1
       while true
-        pull_requests = @client.pull_requests(repository.full_name, status, per_page: 20, page: page)
+        pull_requests = @client.pull_requests(repository.full_name, state: status.to_s, per_page: 20, page: page)
         break if pull_requests.empty?
         break if pull_requests.all? { |pr| pr.created_at < @start_time }
         page += 1
