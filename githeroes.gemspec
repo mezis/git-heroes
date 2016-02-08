@@ -23,6 +23,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "redis-activesupport"
   spec.add_dependency "faraday-http-cache"
   spec.add_dependency "redis"
+  spec.add_dependency "working_hours"
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"

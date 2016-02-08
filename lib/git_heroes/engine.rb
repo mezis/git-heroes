@@ -3,6 +3,8 @@ require 'git_heroes/ext/time'
 require 'git_heroes/ext/octokit'
 require 'active_support/all' # for #beginning_of_week
 require 'csv'
+require 'working_hours'
+
 
 class GitHeroes::Engine
   POINTS = { pull: 1, comment: 1, merge: 2 }
@@ -95,9 +97,10 @@ class GitHeroes::Engine
     end
 
     if pull_request.merged_at
-      record_duration(pull_request.merged_at - pull_request.created_at, 
-                      pull_request.user.login, 
-                      pull_request.merged_at)
+      record_duration(
+        pull_request.created_at.working_time_until(pull_request.merged_at), 
+        pull_request.user.login, 
+        pull_request.merged_at)
     end
   end
 
