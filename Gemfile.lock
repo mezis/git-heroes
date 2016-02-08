@@ -10,7 +10,7 @@ PATH
       working_hours
 
 GEM
-  remote: http://eu.yarp.io/
+  remote: https://rubygems.org/
   specs:
     activesupport (4.0.2)
       i18n (~> 0.6, >= 0.6.4)
