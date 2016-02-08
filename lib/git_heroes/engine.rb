@@ -86,13 +86,10 @@ class GitHeroes::Engine
     end
 
     merger = pull_request.merged_by
-    self_merge = (merger && merger.login == pull_request.user.login)
 
-    if (non_self_comments > 0) || !self_merge
-      give_points(:pull,  pull_request.user.login, pull_request.created_at) 
-    end
+    give_points(:pull,  pull_request.user.login, pull_request.created_at) 
 
-    if pull_request.merged_by && !self_merge
+    if pull_request.merged_by
       give_points(:merge, pull_request.merged_by.login, pull_request.merged_at)
     end
 
